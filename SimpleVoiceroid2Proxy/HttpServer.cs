@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace SimpleVoiceroid2Proxy
 {
-    internal class HttpServer : IDisposable
+    public class HttpServer : IDisposable
     {
         private const int Port = 4532;
 
@@ -14,9 +14,8 @@ namespace SimpleVoiceroid2Proxy
         public HttpServer()
         {
             listener.Prefixes.Add($"http://+:{Port}/");
-            Program.Logger.Info($"http://localhost:{Port} でアクセスできます。GET /talk?text=... または POST /talk `{{\"text\": \"...\"}}` で発話させることができます。");
-
             OpenPort();
+            this.PrintInfo();
         }
 
         public void Dispose()
@@ -35,13 +34,16 @@ namespace SimpleVoiceroid2Proxy
             });
             process?.WaitForExit();
 
-            Program.Logger.Info($"ポート: {Port}/tcp を開放しました。ローカルネットワークから Voiceroid2Proxy にアクセスできます。");
+        }
+
+        public void PrintInfo ()
+        {
+            Program.Logger.System($"PORT :  {Port} / tcp");
         }
 
         public async Task ConsumeAsync()
         {
             listener.Start();
-
             while (listener.IsListening)
             {
                 try

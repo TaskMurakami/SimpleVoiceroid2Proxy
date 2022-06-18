@@ -37,6 +37,7 @@ namespace SimpleVoiceroid2Proxy
                 {
                     try
                     {
+                        Program.Logger.System($"REQUESTED {request.Url.AbsolutePath}");
                         switch (request.Url.AbsolutePath)
                         {
                             case "/talk":
@@ -59,30 +60,7 @@ namespace SimpleVoiceroid2Proxy
 
         private async Task TalkAsync()
         {
-            string? text = null;
-            switch (request.HttpMethod)
-            {
-                case "GET":
-                    text = Query["text"];
-                    break;
-                case "POST":
-                {
-                    using var reader = new StreamReader(request.InputStream, Encoding.UTF8);
-                    var content = await reader.ReadToEndAsync();
-                    dynamic? json = JsonConvert.DeserializeObject(content);
-
-                    text = json?.text;
-                    break;
-                }
-                case "OPTIONS":
-                {
-                    response.AddHeader("Access-Control-Allow-Method", "GET, POST, OPTIONS");
-                    response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
-                    response.AddHeader("Access-Control-Max-Age", "7200");
-                    response.StatusCode = (int) HttpStatusCode.NoContent;
-                    return;
-                }
-            }
+            string text = Query["text"]??"";
 
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -90,8 +68,7 @@ namespace SimpleVoiceroid2Proxy
                 return;
             }
 
-            await Program.VoiceroidEngine.TalkAsync(text!);
-
+            await Program.AIVoiceroidEngine.TalkAsync(text);
             await Respond(HttpStatusCode.OK, $"Talked `{text}`.");
         }
 
